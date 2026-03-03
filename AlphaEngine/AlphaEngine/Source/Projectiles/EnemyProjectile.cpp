@@ -1,20 +1,22 @@
 #include "EnemyProjectile.h"
 #include "../System/CSVManager.h"
-#include <cmath>
+#include "../Particles/ParticleManager.h" 
 #include "../Player/Player.h"
+#include <cmath>
 
 EnemyProjectile::EnemyProjectile(AEVec2 pos, AEVec2 dir)
     : BaseProjectile(pos, dir, true)
+    , trailTimer(0.0f)
 {
     oriSpeed = 400.0f;
     speed = oriSpeed;
-    
+
     transform.SetScale(40.0f, 40.0f);
     transform.SetPosition(pos.x, pos.y);
     SetLifespan(3.0f);
 
     sprite = new Sprite(CSVManager::ReadInfo("shadoworb"));
-    sprite->PlayDefaultAnimation(-1, 1.0f);
+    sprite->PlayAnimation("orb1", -1, 1.0f);
 }
 
 EnemyProjectile::~EnemyProjectile()
@@ -33,8 +35,19 @@ void EnemyProjectile::Update(float deltaTime)
     {
         if (!stopped)
         {
-            SetLifespan(GetLifespan() - 1.f * deltaTime);
+            SetLifespan(GetLifespan() - deltaTime);
 
+            // Trail Logic
+            trailTimer += deltaTime;
+            if (trailTimer >= 0.05f)
+            {
+                ParticleManager::GetInstance()->SpawnParticle(
+                    new BaseParticle(transform.GetPosition(), { 0.0f, 0.0f }, 0.5f, "shadoworb", "idle")
+                );
+                trailTimer = 0.0f;
+            }
+
+            // Homing Logic
             if (isHoming)
             {
                 Player* player = Player::GetInstance();
@@ -49,7 +62,6 @@ void EnemyProjectile::Update(float deltaTime)
                 {
                     float perfectX = dx / dist;
                     float perfectY = dy / dist;
-
                     float turnSpeed = 3.0f;
                     AEVec2 currentDir = GetDirection();
 
@@ -60,15 +72,14 @@ void EnemyProjectile::Update(float deltaTime)
                     SetDirection({ newDirX / newMag, newDirY / newMag });
                 }
             }
-            //float currentSpeed = slowed ? (oriSpeed * 0.5f) : oriSpeed;
-            //speed = currentSpeed;
+
             speed = slowed ? (oriSpeed * 0.5f) : oriSpeed;
 
             AEVec2 position = transform.GetPosition();
             position.x += speed * GetDirection().x * deltaTime;
             position.y += speed * GetDirection().y * deltaTime;
 
-            transform.SetRotation(atan2f(GetDirection().y, GetDirection().x) + (3.14159f * 1.25f));
+            transform.SetRotation(atan2f(GetDirection().y, GetDirection().x) + (3.14159f * 1.0f));            
             transform.SetPosition(position.x, position.y);
 
             if (sprite) sprite->Update();
@@ -83,19 +94,22 @@ void EnemyProjectile::Draw()
 
 bool EnemyProjectile::IsDead()
 {
-    return currLifespan <= 0.0f;
+    return GetLifespan() <= 0.0f;
 }
 
+// Sets a new movement speed
 void EnemyProjectile::Speed(float newSpeed)
 {
     this->speed = newSpeed;
 }
 
+// Returns the current speed
 float EnemyProjectile::Speed() const
 {
     return this->speed;
 }
 
+// Returns the original speed (before slows/modifiers)
 float EnemyProjectile::OriginalSpeed() const
 {
     return this->oriSpeed;

@@ -11,6 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Particles\ParticleManager.cpp" />
+    <ClCompile Include="Source\Particles\BaseParticle.cpp" />
     <ClCompile Include="Source\Abilities\BossExplosive.cpp" />
     <ClCompile Include="Source\Abilities\BossLaser.cpp" />
     <ClCompile Include="Source\Enemy\ArcherEnemy.cpp" />
@@ -46,6 +48,8 @@
     <ClCompile Include="Source\Utils\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Particles\ParticleManager.h" />
+    <ClInclude Include="Source\Particles\BaseParticle.h" />
     <ClInclude Include="Source\Abilities\BossExplosive.h" />
     <ClInclude Include="Source\Abilities\BossLaser.h" />
     <ClInclude Include="Source\Enemy\ArcherEnemy.h" />

@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include "Particles/ParticleManager.h"
 
 bool gGameRunning = true;
 
@@ -43,11 +44,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         //Check inputs for settings
         sManager->CheckSettingsInputs();
 
+        float dt = (float)AEFrameRateControllerGetFrameTime();
+        ParticleManager::GetInstance()->Update(dt);
+
         SceneManager::Update();
 
         AEGfxStart();
         AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
         SceneManager::Draw();
+        ParticleManager::GetInstance()->Draw();
 
         AESysFrameEnd();
     }
@@ -59,6 +64,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     Button::FreeResources();
     SettingsManager::DestroyInstance();
     sManager = nullptr;
+    ParticleManager::Destroy();
     AESysExit();
 
     return 1;
