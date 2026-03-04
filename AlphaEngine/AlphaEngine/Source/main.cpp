@@ -38,7 +38,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         AESysFrameStart();
 
         // check if forcing the application to quit
-        if (AEInputCheckTriggered(AEVK_ESCAPE) || 0 == AESysDoesWindowExist())
+        if (0 == AESysDoesWindowExist())
             gGameRunning = false;
 
         //Check inputs for settings

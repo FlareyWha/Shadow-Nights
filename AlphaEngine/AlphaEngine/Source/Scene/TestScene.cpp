@@ -8,6 +8,7 @@
 #include "../Enemy/BatEnemy.h"
 #include "../Enemy/ArcherEnemy.h"
 #include "../Particles/ParticleManager.h" // Added include
+#include "../Scene/PauseMenu.h"
 
 void TestScene::Load() {
     AEGfxReset();
@@ -65,7 +66,7 @@ void TestScene::Update() {
             // AABB Collision with Player
             if (AABBOverlap(proj->transform.GetPosition(), { 20,20 },
                 player->GetTransform().GetPosition(), { 35,35 })) {
-                player->TakeDamage(10);
+                player->TakeDamage(3);
                 delete proj; // This triggers EnemyProjectile destructor (cleans sprite)
                 it = enemyProjs.erase(it);
             }
@@ -118,6 +119,10 @@ void TestScene::Update() {
     if (player->GetCollidedTile().tileType == TILE_TYPE::BACKGROUND && enemyList.size() == 0) {
         SceneManager::ChangeScene(new TestScene2());
     }
+
+    if(AEInputCheckTriggered(AEVK_ESCAPE)) {
+        SceneManager::ChangeScene(new PauseMenu());
+	}
 }
 
 void TestScene::Draw() {

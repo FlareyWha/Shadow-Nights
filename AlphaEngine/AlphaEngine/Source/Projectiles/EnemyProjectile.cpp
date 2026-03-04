@@ -42,7 +42,7 @@ void EnemyProjectile::Update(float deltaTime)
             if (trailTimer >= 0.05f)
             {
                 ParticleManager::GetInstance()->SpawnParticle(
-                    new BaseParticle(transform.GetPosition(), { 0.0f, 0.0f }, 0.5f, "shadoworb", "idle")
+                    new BaseParticle(transform.GetPosition(), { 0.0f, 0.0f }, 0.3f, "shadoworb", "idle")
                 );
                 trailTimer = 0.0f;
             }

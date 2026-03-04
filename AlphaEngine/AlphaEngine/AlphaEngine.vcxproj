@@ -22,6 +22,7 @@
     <ClCompile Include="Source\Projectiles\EnemyProjectile.cpp" />
     <ClCompile Include="Source\Enemy\BaseEnemy.cpp" />
     <ClCompile Include="Source\Abilities\AbilityHandler.cpp" />
+    <ClCompile Include="Source\Scene\PauseMenu.cpp" />
     <ClCompile Include="Source\Sprite\Animation.cpp" />
     <ClCompile Include="Source\Sprite\Sprite.cpp" />
     <ClCompile Include="Source\System\Button.cpp" />
@@ -59,6 +60,7 @@
     <ClInclude Include="Source\Projectiles\EnemyProjectile.h" />
     <ClInclude Include="Source\Enemy\BaseEnemy.h" />
     <ClInclude Include="Source\Abilities\AbilityHandler.h" />
+    <ClInclude Include="Source\Scene\PauseMenu.h" />
     <ClInclude Include="Source\Sprite\Animation.h" />
     <ClInclude Include="Source\Sprite\Sprite.h" />
     <ClInclude Include="Source\System\Button.h" />
