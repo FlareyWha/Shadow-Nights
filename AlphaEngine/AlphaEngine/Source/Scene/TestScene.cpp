@@ -18,11 +18,8 @@ void TestScene::Load() {
     player = Player::GetInstance();
     map->LoadMap("Level1");
 
-    // Load UI Resources
     Button::LoadResources();
 
-    // We initialize the buttons here, but their positions will be 
-    // updated every frame in the Update loop when paused.
     btnResume = new Button(0.0f, 0.0f, 200.0f, 50.0f, "Resume");
     btnExit = new Button(0.0f, 0.0f, 200.0f, 50.0f, "Quit to Menu");
 }
@@ -32,7 +29,6 @@ void TestScene::Init() {
     abilityHandler = new AbilityHandler();
     isPaused = false;
 
-    // Spawn Enemies (Shadow, Bat, Archer)
     int numberOfEnemies = 3;
     float startX = 600.0f;
     float spacing = 300.0f;
@@ -55,13 +51,11 @@ void TestScene::Init() {
 }
 
 void TestScene::Update() {
-    // 1. Toggle Pause State
     if (AEInputCheckTriggered(AEVK_ESCAPE)) {
         isPaused = !isPaused;
     }
 
     if (!isPaused) {
-        // --- NORMAL GAMEPLAY LOGIC ---
         f32 dt = (f32)AEFrameRateControllerGetFrameTime();
 
         ParticleManager::GetInstance()->Update(dt);
@@ -73,7 +67,6 @@ void TestScene::Update() {
             enemy->Update(dt);
         }
 
-        // Enemy Projectile vs Player Collision
         for (BaseEnemy* enemy : enemyList) {
             std::vector<EnemyProjectile*>& enemyProjs = enemy->GetProjectiles();
             for (auto it = enemyProjs.begin(); it != enemyProjs.end(); ) {
@@ -87,7 +80,6 @@ void TestScene::Update() {
             }
         }
 
-        // Player Projectile vs Enemies
         std::vector<BaseProjectile*>& projs = player->projectileList;
         for (auto it = projs.begin(); it != projs.end(); ) {
             bool hit = false;
@@ -104,23 +96,18 @@ void TestScene::Update() {
             else { ++it; }
         }
 
-        // Cleanup Dead Enemies
         for (auto it = enemyList.begin(); it != enemyList.end(); ) {
             if ((*it)->IsReadyToDelete()) { delete* it; it = enemyList.erase(it); }
             else { ++it; }
         }
 
-        // Win Condition
         if (player->GetCollidedTile().tileType == TILE_TYPE::BACKGROUND && enemyList.size() == 0) {
             SceneManager::ChangeScene(new TestScene2());
         }
     }
     else {
-        // --- PAUSE MENU LOGIC ---
         AEVec2 pPos = player->GetTransform().GetPosition();
 
-        // Sync the button hitboxes to the player's world position 
-        // BEFORE checking for clicks.
         btnResume->SetPosition(pPos.x, pPos.y + 60.0f);
         btnExit->SetPosition(pPos.x, pPos.y - 60.0f);
 
@@ -134,7 +121,6 @@ void TestScene::Update() {
 }
 
 void TestScene::Draw() {
-    // 1. Standard World Rendering
     AEGfxSetBackgroundColor(0.4f, 0.4f, 0.4f);
     map->RenderMap();
     ParticleManager::GetInstance()->Draw();
@@ -157,7 +143,6 @@ void TestScene::Draw() {
 
         AEGfxSetTransparency(0.6f);
 
-        // Transform and Draw the Box
         AEMtx33 scale, trans, final;
         float dimSize = 6000.0f;
         AEMtx33Scale(&scale, dimSize, dimSize);
@@ -170,7 +155,6 @@ void TestScene::Draw() {
         AEGfxSetTransparency(1.0f);
         AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
 
-        // Draw Buttons
         btnResume->Draw();
         btnExit->Draw();
     }
@@ -180,11 +164,9 @@ void TestScene::Free() {
     player->DestroyInstance();
     if (abilityHandler) delete abilityHandler;
 
-    // Cleanup UI
     if (btnResume) delete btnResume;
     if (btnExit) delete btnExit;
 
-    // Cleanup Particles
     ParticleManager::GetInstance()->ClearAllParticles();
 
     for (BaseEnemy* enemy : enemyList) { delete enemy; }
