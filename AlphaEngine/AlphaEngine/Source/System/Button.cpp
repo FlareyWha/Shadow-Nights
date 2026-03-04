@@ -17,77 +17,68 @@ Button::Button(float x, float y, float width, float height, const char* text)
 
 void Button::Draw()
 {
-    //Draw the Button Background Image
+    // --- 1. Draw the Button Background (World Space) ---
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
     AEGfxSetTransparency(1.0f);
 
-    // Set the button texture (safety check)
-    if (sprite == nullptr) {
-        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-        AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f);
-    }
-    else {
-        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); // Reset to White
+    if (sprite) {
         AEGfxTextureSet(sprite, 0, 0);
+        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-    AEGfxSetTransparency(1.0f);
-
-    // Create Transform Matrix
     AEMtx33 scale, trans, final;
     AEMtx33Scale(&scale, w, h);
     AEMtx33Trans(&trans, x, y);
     AEMtx33Concat(&final, &trans, &scale);
-
     AEGfxSetTransform(final.m);
 
-    if (pMesh) {
-        AEGfxMeshDraw(pMesh, AE_GFX_MDM_TRIANGLES);
-    }
+    if (pMesh) AEGfxMeshDraw(pMesh, AE_GFX_MDM_TRIANGLES);
 
+    // --- 2. Draw the Text (Corrected for Camera) ---
     if (fontId != -1) {
-        //Get Window Dimensions
-        float winW = 800.0f; // Half of 1600
-        float winH = 450.0f; // Half of 900
+        float textW, textH;
+        AEGfxGetPrintSize(fontId, label, 1.0f, &textW, &textH);
 
-        //Convert Button World Position
-        float textX = x / winW;
-        float textY = y / winH;
+        // Get the current camera position to calculate relative offset
+        float camX, camY;
+        AEGfxGetCamPosition(&camX, &camY);
 
-        //Center the Text later pls
-        float offsetX = -0.01f * strlen(label);
-        float offsetY = -0.015f;
+        // Calculate where the button is RELATIVE to the camera
+        float relativeX = x - camX;
+        float relativeY = y - camY;
 
-        AEGfxPrint(fontId, label, textX + offsetX, textY + offsetY, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+        // Convert that relative position to the -1 to 1 range for AEGfxPrint
+        // Assuming 1600x900 resolution (800 and 450 are half-widths)
+        float textX = (relativeX / 800.0f) - (textW / 2.0f);
+        float textY = (relativeY / 450.0f) - (textH / 2.0f);
+
+        // Use 9 arguments (added 1.0f for alpha)
+        AEGfxPrint(fontId, label, textX, textY, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 }
 
 bool Button::IsHovered()
 {
-    //Get Mouse Position
+    // 1. Get Mouse Pixel Position
     POINT mousePos;
     GetCursorPos(&mousePos);
     ScreenToClient(AESysGetWindowHandle(), &mousePos);
 
-	//Window Dimensions
-    float halfWidth = 800.0f;
-    float halfHeight = 450.0f;
+    // 2. Get Camera Position (CRITICAL)
+    // Since the buttons are in the World following the player, 
+    // we need to know where the camera is looking.
+    float camX, camY;
+    AEGfxGetCamPosition(&camX, &camY);
 
-    //Convert to World Coordinates
-    // World X = Pixel X - 800
-    // World Y = 450 - Pixel Y
-    float worldMouseX = mousePos.x - halfWidth;
-    float worldMouseY = halfHeight - mousePos.y;
+    // 3. Convert Mouse to World Coordinates
+    // Pixel (0,0) is top-left. World (0,0) is center.
+    // Half-width = 800, Half-height = 450
+    float worldMouseX = (mousePos.x - 800.0f) + camX;
+    float worldMouseY = (450.0f - mousePos.y) + camY;
 
-	// Debugging leave this here for now
-    // char debug[100];
-    // sprintf_s(debug, "Mouse: %f, %f | Button: %f, %f\n", worldMouseX, worldMouseY, x, y);
-    // OutputDebugStringA(debug);
-
-    // Check Collision
+    // 4. AABB Collision Check
+    // Check if the world mouse is within the button's world bounds
     return (worldMouseX > x - w / 2 && worldMouseX < x + w / 2 &&
         worldMouseY > y - h / 2 && worldMouseY < y + h / 2);
 }
